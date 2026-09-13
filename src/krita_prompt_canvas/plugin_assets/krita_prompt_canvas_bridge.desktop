@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Service
+ServiceTypes=Krita/PythonPlugin
+X-KDE-Library=krita_prompt_canvas_bridge
+X-Python-2-Compatible=false
+Name=Krita Prompt Canvas Bridge
+Comment=Processes validated vector artwork jobs from the Prompt Canvas desktop GUI.
+

@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "krita-prompt-canvas"
+version = "0.1.0"
+description = "Prompt-driven vector artwork in Krita through an OpenAI-compatible director and Krita Python API bridge."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "krita-prompt-canvas contributors" }]
+keywords = ["krita", "svg", "openai-compatible", "creative-tools", "python-gui"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Topic :: Multimedia :: Graphics :: Editors",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.scripts]
+krita-prompt-canvas = "krita_prompt_canvas.app:main"
+
+[project.urls]
+Homepage = "https://github.com/rsw510670993/krita-prompt-canvas"
+Issues = "https://github.com/rsw510670993/krita-prompt-canvas/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+krita_prompt_canvas = [
+  "plugin_assets/*.desktop",
+  "plugin_assets/krita_prompt_canvas_bridge/*.py",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
