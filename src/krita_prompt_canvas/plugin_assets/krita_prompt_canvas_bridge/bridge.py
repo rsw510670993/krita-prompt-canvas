@@ -57,7 +57,7 @@ class PromptCanvasBridge(Extension):
 
     def createActions(self, window):
         action = window.createAction(
-            "krita_prompt_canvas_process_next", "Process Prompt Canvas Job"
+            "krita_prompt_canvas_process_next", "处理下一个提示词画布任务"
         )
         action.triggered.connect(self.process_next)
 
@@ -95,7 +95,7 @@ class PromptCanvasBridge(Extension):
 
     def _render(self, payload):
         if payload.get("protocol") != 1:
-            raise ValueError("Unsupported queue protocol")
+            raise ValueError("不支持此任务队列协议")
         job_id = str(payload["job_id"])
         title = str(payload["title"])
         width, height = int(payload["width"]), int(payload["height"])
@@ -103,9 +103,9 @@ class PromptCanvasBridge(Extension):
         stem = str(payload["output_stem"])
         output_dir = Path(str(payload["output_dir"])).expanduser().resolve()
         if not (256 <= width <= 4096 and 256 <= height <= 4096):
-            raise ValueError("Canvas dimensions are outside the allowed range")
+            raise ValueError("画布尺寸超出允许范围")
         if not JOB_ID_PATTERN.fullmatch(job_id):
-            raise ValueError("Job id is unsafe")
+            raise ValueError("任务 ID 不安全")
         svg_without_namespace = svg.replace(SVG_NAMESPACE, "", 1)
         if (
             SVG_NAMESPACE not in svg
@@ -113,9 +113,9 @@ class PromptCanvasBridge(Extension):
             or FORBIDDEN_SVG.search(svg)
             or EXTERNAL_URL.search(svg_without_namespace)
         ):
-            raise ValueError("SVG failed the Krita-side safety check")
+            raise ValueError("SVG 未通过 Krita 端安全检查")
         if not STEM_PATTERN.fullmatch(stem):
-            raise ValueError("Output stem is unsafe")
+            raise ValueError("输出文件名不安全")
         output_dir.mkdir(parents=True, exist_ok=True)
         kra_path = output_dir / (stem + ".kra")
         png_path = output_dir / (stem + ".png")
@@ -123,20 +123,20 @@ class PromptCanvasBridge(Extension):
         app = Krita.instance()
         document = app.createDocument(width, height, title, "RGBA", "U8", "", 72.0)
         if document is None:
-            raise RuntimeError("Krita.createDocument returned None")
+            raise RuntimeError("Krita.createDocument 未能创建文档")
         try:
             vector_layer = document.createVectorLayer("AI-directed vector artwork")
             document.rootNode().addChildNode(vector_layer, None)
             shapes = vector_layer.addShapesFromSvg(svg)
             if not shapes:
-                raise RuntimeError("Krita did not create any SVG shapes")
+                raise RuntimeError("Krita 没有创建任何 SVG 图形")
             document.refreshProjection()
             document.waitForDone()
             document.setBatchmode(True)
             if not document.saveAs(str(kra_path)):
-                raise RuntimeError("Krita could not save the KRA document")
+                raise RuntimeError("Krita 无法保存 KRA 文档")
             if not document.exportImage(str(png_path), InfoObject()):
-                raise RuntimeError("Krita could not export the PNG preview")
+                raise RuntimeError("Krita 无法导出 PNG 预览图")
             document.waitForDone()
         finally:
             try:

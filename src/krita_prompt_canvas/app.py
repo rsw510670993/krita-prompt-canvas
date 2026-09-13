@@ -20,7 +20,7 @@ from .svg_guard import validate_svg
 class PromptCanvasApp:
     def __init__(self, root: tk.Tk):
         self.root = root
-        self.root.title("Krita Prompt Canvas")
+        self.root.title("Krita 提示词画布")
         self.root.geometry("900x700")
         self.root.minsize(760, 620)
         self.queue = FileJobQueue(queue_dir())
@@ -34,7 +34,7 @@ class PromptCanvasApp:
         self.height = tk.IntVar(value=800)
         self.output_dir = tk.StringVar(value=str(default_output_dir()))
         self.krita_path = tk.StringVar(value=os.environ.get("KPC_KRITA_PATH", ""))
-        self.status = tk.StringVar(value="Ready")
+        self.status = tk.StringVar(value="就绪")
 
         self._build_ui()
 
@@ -44,16 +44,16 @@ class PromptCanvasApp:
         outer.columnconfigure(1, weight=1)
         outer.rowconfigure(7, weight=1)
 
-        ttk.Label(outer, text="Krita Prompt Canvas", font=("Segoe UI", 20, "bold")).grid(
+        ttk.Label(outer, text="Krita 提示词画布", font=("Microsoft YaHei UI", 20, "bold")).grid(
             row=0, column=0, columnspan=3, sticky="w", pady=(0, 16)
         )
-        self._entry_row(outer, 1, "API base URL", self.base_url)
-        self._entry_row(outer, 2, "Model", self.model)
-        self._entry_row(outer, 3, "API key", self.api_key, show="•")
+        self._entry_row(outer, 1, "API 基础地址", self.base_url)
+        self._entry_row(outer, 2, "模型名称", self.model)
+        self._entry_row(outer, 3, "API 密钥", self.api_key, show="•")
 
         dimensions = ttk.Frame(outer)
         dimensions.grid(row=4, column=1, columnspan=2, sticky="w", pady=5)
-        ttk.Label(outer, text="Canvas").grid(row=4, column=0, sticky="w", pady=5)
+        ttk.Label(outer, text="画布尺寸").grid(row=4, column=0, sticky="w", pady=5)
         ttk.Spinbox(dimensions, from_=256, to=4096, textvariable=self.width, width=8).pack(
             side="left"
         )
@@ -62,26 +62,28 @@ class PromptCanvasApp:
             side="left"
         )
 
-        self._path_row(outer, 5, "Output folder", self.output_dir, directory=True)
-        self._path_row(outer, 6, "Krita executable", self.krita_path, directory=False)
+        self._path_row(outer, 5, "输出文件夹", self.output_dir, directory=True)
+        self._path_row(outer, 6, "Krita 程序", self.krita_path, directory=False)
 
-        prompt_frame = ttk.LabelFrame(outer, text="Artwork request", padding=10)
+        prompt_frame = ttk.LabelFrame(outer, text="绘画需求", padding=10)
         prompt_frame.grid(row=7, column=0, columnspan=3, sticky="nsew", pady=(12, 8))
         prompt_frame.rowconfigure(0, weight=1)
         prompt_frame.columnconfigure(0, weight=1)
-        self.prompt = tk.Text(prompt_frame, wrap="word", height=12, font=("Segoe UI", 11))
+        self.prompt = tk.Text(
+            prompt_frame, wrap="word", height=12, font=("Microsoft YaHei UI", 11)
+        )
         self.prompt.grid(row=0, column=0, sticky="nsew")
         self.prompt.insert("1.0", "二次元风格画风，粉色短发少女在湖边运动前热身")
 
         actions = ttk.Frame(outer)
         actions.grid(row=8, column=0, columnspan=3, sticky="ew", pady=8)
-        ttk.Button(actions, text="Install / update Krita plugin", command=self.install).pack(
+        ttk.Button(actions, text="安装 / 更新 Krita 插件", command=self.install).pack(
             side="left"
         )
-        ttk.Button(actions, text="Launch Krita", command=self.launch_krita).pack(
+        ttk.Button(actions, text="启动 Krita", command=self.launch_krita).pack(
             side="left", padx=8
         )
-        self.generate_button = ttk.Button(actions, text="Generate artwork", command=self.generate)
+        self.generate_button = ttk.Button(actions, text="开始创作", command=self.generate)
         self.generate_button.pack(side="right")
 
         ttk.Label(outer, textvariable=self.status).grid(
@@ -107,12 +109,14 @@ class PromptCanvasApp:
             selected = (
                 filedialog.askdirectory()
                 if directory
-                else filedialog.askopenfilename(filetypes=[("Krita", "krita.exe"), ("All", "*")])
+                else filedialog.askopenfilename(
+                    filetypes=[("Krita 程序", "krita.exe"), ("所有文件", "*")]
+                )
             )
             if selected:
                 variable.set(selected)
 
-        ttk.Button(parent, text="Browse", command=browse).grid(row=row, column=2, padx=(8, 0))
+        ttk.Button(parent, text="浏览", command=browse).grid(row=row, column=2, padx=(8, 0))
 
     def _append_log(self, message: str) -> None:
         self.log.configure(state="normal")
@@ -124,27 +128,27 @@ class PromptCanvasApp:
         try:
             package, desktop = install_plugin()
         except Exception as exc:
-            messagebox.showerror("Plugin install failed", str(exc))
+            messagebox.showerror("插件安装失败", str(exc))
             return
-        self._append_log(f"Plugin copied to {package}")
-        self._append_log(f"Desktop file copied to {desktop}")
+        self._append_log(f"插件程序已复制到：{package}")
+        self._append_log(f"插件描述文件已复制到：{desktop}")
         messagebox.showinfo(
-            "Plugin installed",
-            "In Krita, open Settings → Configure Krita → Python Plugin Manager, "
-            "enable ‘Krita Prompt Canvas Bridge’, then restart Krita once.",
+            "插件安装完成",
+            "请在 Krita 中打开“设置 → 配置 Krita → Python 插件管理器”，"
+            "启用“Krita 提示词画布桥接器”，然后重启一次 Krita。",
         )
 
     def launch_krita(self) -> None:
         executable = Path(self.krita_path.get().strip())
         if not executable.is_file():
-            messagebox.showerror("Krita not found", "Choose the Krita executable first.")
+            messagebox.showerror("未找到 Krita", "请先选择 Krita 可执行程序。")
             return
         try:
             subprocess.Popen([str(executable), "--nosplash"], close_fds=True)
         except OSError as exc:
-            messagebox.showerror("Could not launch Krita", str(exc))
+            messagebox.showerror("无法启动 Krita", str(exc))
             return
-        self._append_log(f"Launched {executable}")
+        self._append_log(f"已启动 Krita：{executable}")
 
     def generate(self) -> None:
         request = self.prompt.get("1.0", "end").strip()
@@ -155,17 +159,17 @@ class PromptCanvasApp:
             settings.validate()
             width, height = int(self.width.get()), int(self.height.get())
             if not 256 <= width <= 4096 or not 256 <= height <= 4096:
-                raise ValueError("Canvas dimensions must be between 256 and 4096")
+                raise ValueError("画布宽高必须在 256 至 4096 像素之间")
             if not request:
-                raise ValueError("Artwork request is empty")
+                raise ValueError("绘画需求不能为空")
             output = Path(self.output_dir.get()).expanduser()
         except Exception as exc:
-            messagebox.showerror("Invalid settings", str(exc))
+            messagebox.showerror("设置无效", str(exc))
             return
 
         self.generate_button.configure(state="disabled")
-        self.status.set("Asking the art director model…")
-        self._append_log("Requesting a structured SVG plan. API keys are not written to disk.")
+        self.status.set("正在请求 AI 美术指导……")
+        self._append_log("正在请求结构化 SVG 方案；API 密钥不会写入磁盘。")
         threading.Thread(
             target=self._prepare_job,
             args=(settings, request, width, height, output),
@@ -193,15 +197,15 @@ class PromptCanvasApp:
     def _generation_failed(self, detail: str) -> None:
         self.current_job_id = None
         self.generate_button.configure(state="normal")
-        self.status.set("Generation failed")
+        self.status.set("创作失败")
         self._append_log(detail)
-        messagebox.showerror("Generation failed", detail)
+        messagebox.showerror("创作失败", detail)
 
     def _job_queued(self, job_id: str) -> None:
         self.current_job_id = job_id
         self.poll_started = time.monotonic()
-        self.status.set("Plan validated; waiting for the Krita bridge…")
-        self._append_log(f"Queued job {job_id}. Keep Krita running with the bridge enabled.")
+        self.status.set("方案验证通过，正在等待 Krita 桥接器……")
+        self._append_log(f"任务 {job_id} 已加入队列。请保持 Krita 运行并启用桥接器。")
         self.root.after(500, self._poll_result)
 
     def _poll_result(self) -> None:
@@ -210,12 +214,12 @@ class PromptCanvasApp:
         try:
             result = self.queue.read_result(self.current_job_id)
         except Exception as exc:
-            self._generation_failed(f"Could not read Krita result: {exc}")
+            self._generation_failed(f"无法读取 Krita 处理结果：{exc}")
             return
         if result is None:
             if time.monotonic() - self.poll_started > 180:
                 self._generation_failed(
-                    "Krita did not finish within 180 seconds. Check that the bridge is enabled."
+                    "Krita 在 180 秒内未完成任务，请检查桥接器是否已启用。"
                 )
                 return
             self.root.after(750, self._poll_result)
@@ -224,14 +228,14 @@ class PromptCanvasApp:
         self.generate_button.configure(state="normal")
         self.current_job_id = None
         if result.get("status") != "success":
-            self._generation_failed(str(result.get("error", "Unknown Krita bridge error")))
+            self._generation_failed(str(result.get("error", "未知的 Krita 桥接器错误")))
             return
         png_path = str(result.get("png_path", ""))
         kra_path = str(result.get("kra_path", ""))
-        self.status.set("Artwork rendered successfully")
+        self.status.set("作品渲染成功")
         self._append_log(f"PNG: {png_path}")
         self._append_log(f"KRA: {kra_path}")
-        messagebox.showinfo("Artwork ready", f"PNG:\n{png_path}\n\nKRA:\n{kra_path}")
+        messagebox.showinfo("作品已完成", f"PNG：\n{png_path}\n\nKRA：\n{kra_path}")
 
 
 def main() -> None:

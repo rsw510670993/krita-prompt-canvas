@@ -45,13 +45,17 @@ pip install -e .
 krita-prompt-canvas
 ```
 
+Windows 用户完成克隆后，也可以直接双击根目录中的
+`启动-Krita-Prompt-Canvas.cmd`。启动器会优先使用项目的 `.venv`；如果没有虚拟环境，
+则使用系统 Python，并自动设置源码路径，不需要手动激活环境。
+
 首次使用：
 
-1. 在 GUI 中点击 **Install / update Krita plugin**。
+1. 在 GUI 中点击 **安装 / 更新 Krita 插件**。
 2. 打开 Krita 的 **Settings → Configure Krita → Python Plugin Manager**。
 3. 启用 **Krita Prompt Canvas Bridge**，重启 Krita一次。
 4. 在 GUI 中填写 API base URL、模型名和 API key。
-5. 输入创作需求，选择输出目录，点击 **Generate artwork**。
+5. 输入创作需求，选择输出目录，点击 **开始创作**。
 
 可用环境变量参见 [.env.example](.env.example)。环境变量只由进程读取；项目不会自动
 加载 `.env`，以免无意持久化密钥。
@@ -119,4 +123,3 @@ python -m unittest discover -s tests -v
 ## License
 
 MIT
-

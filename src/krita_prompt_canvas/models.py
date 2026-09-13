@@ -21,15 +21,15 @@ class ApiSettings:
     def chat_completions_url(self) -> str:
         base = self.base_url.strip().rstrip("/")
         if not base:
-            raise PlanError("API base URL is required")
+            raise PlanError("必须填写 API 基础地址")
         return f"{base}/chat/completions"
 
     def validate(self) -> None:
         endpoint = urlsplit(self.chat_completions_url)
         if endpoint.scheme not in {"http", "https"} or not endpoint.netloc:
-            raise PlanError("API base URL must be an absolute HTTP or HTTPS URL")
+            raise PlanError("API 基础地址必须是完整的 HTTP 或 HTTPS 地址")
         if not self.model.strip():
-            raise PlanError("Model name is required")
+            raise PlanError("必须填写模型名称")
 
 
 @dataclass(frozen=True)
@@ -49,20 +49,20 @@ class RenderPlan:
             height = int(data["height"])
             svg = str(data["svg"]).strip()
         except (KeyError, TypeError, ValueError) as exc:
-            raise PlanError("Model response is missing title, width, height, or svg") from exc
+            raise PlanError("模型响应缺少 title、width、height 或 svg 字段") from exc
 
         if not title:
-            raise PlanError("Artwork title cannot be empty")
+            raise PlanError("作品标题不能为空")
         if len(title) > 200:
-            raise PlanError("Artwork title cannot exceed 200 characters")
+            raise PlanError("作品标题不能超过 200 个字符")
         if not 256 <= width <= 4096 or not 256 <= height <= 4096:
-            raise PlanError("Canvas dimensions must be between 256 and 4096 pixels")
+            raise PlanError("画布宽高必须在 256 至 4096 像素之间")
         if not svg:
-            raise PlanError("SVG cannot be empty")
+            raise PlanError("SVG 内容不能为空")
 
         raw_palette = data.get("palette", [])
         if not isinstance(raw_palette, list):
-            raise PlanError("palette must be a JSON array")
+            raise PlanError("palette 必须是 JSON 数组")
         palette = tuple(str(item) for item in raw_palette[:16])
         return cls(title, width, height, svg, palette, str(data.get("notes", "")))
 

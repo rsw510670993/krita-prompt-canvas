@@ -27,13 +27,13 @@ def _extract_json_object(text: str) -> dict[str, Any]:
     except json.JSONDecodeError as exc:
         start, end = candidate.find("{"), candidate.rfind("}")
         if start < 0 or end <= start:
-            raise PlanError("Model did not return a JSON object") from exc
+            raise PlanError("模型没有返回 JSON 对象") from exc
         try:
             parsed = json.loads(candidate[start : end + 1])
         except json.JSONDecodeError as nested:
-            raise PlanError("Model returned invalid JSON") from nested
+            raise PlanError("模型返回了无效的 JSON") from nested
     if not isinstance(parsed, dict):
-        raise PlanError("Model response must be a JSON object")
+        raise PlanError("模型响应必须是 JSON 对象")
     return parsed
 
 
@@ -61,12 +61,12 @@ class OpenAICompatibleClient:
         try:
             content = response["choices"][0]["message"]["content"]
         except (KeyError, IndexError, TypeError) as exc:
-            raise ApiError("Endpoint response does not match Chat Completions format") from exc
+            raise ApiError("接口响应不符合 Chat Completions 格式") from exc
         if not isinstance(content, str):
-            raise ApiError("Endpoint returned non-text message content")
+            raise ApiError("接口返回了非文本消息内容")
         plan = RenderPlan.from_mapping(_extract_json_object(content))
         if plan.width != width or plan.height != height:
-            raise PlanError("Model changed the requested canvas dimensions")
+            raise PlanError("模型擅自改变了请求的画布尺寸")
         return plan
 
     def _post(self, payload: dict[str, Any]) -> dict[str, Any]:
@@ -87,12 +87,11 @@ class OpenAICompatibleClient:
             detail = exc.read(2048).decode("utf-8", errors="replace")
             raise ApiError(f"HTTP {exc.code}: {detail}") from exc
         except URLError as exc:
-            raise ApiError(f"Could not reach endpoint: {exc.reason}") from exc
+            raise ApiError(f"无法连接 API 接口：{exc.reason}") from exc
         try:
             parsed = json.loads(raw)
         except json.JSONDecodeError as exc:
-            raise ApiError("Endpoint returned invalid JSON") from exc
+            raise ApiError("API 接口返回了无效的 JSON") from exc
         if not isinstance(parsed, dict):
-            raise ApiError("Endpoint returned an unexpected JSON value")
+            raise ApiError("API 接口返回了非预期的 JSON 内容")
         return parsed
-

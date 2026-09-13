@@ -3,6 +3,5 @@ Type=Service
 ServiceTypes=Krita/PythonPlugin
 X-KDE-Library=krita_prompt_canvas_bridge
 X-Python-2-Compatible=false
-Name=Krita Prompt Canvas Bridge
-Comment=Processes validated vector artwork jobs from the Prompt Canvas desktop GUI.
-
+Name=Krita 提示词画布桥接器
+Comment=处理来自提示词画布桌面程序的矢量绘画任务。
